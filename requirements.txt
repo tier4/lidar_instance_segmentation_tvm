@@ -1,0 +1,3 @@
+gdown
+torch==1.4.0
+wget

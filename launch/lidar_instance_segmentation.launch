@@ -1,0 +1,37 @@
+<launch>
+  <arg name="model_file_path" default="$(find lidar_instance_segmentation_tvm)/data/bcnn.so" />
+  <arg name="model_json_path" default="$(find lidar_instance_segmentation_tvm)/data/model_graph.json" />
+  <arg name="model_params_path" default="$(find lidar_instance_segmentation_tvm)/data/model_graph.params" />
+
+  <!-- <arg name="target_frame" default="lidar_top" /> -->
+  <arg name="target_frame" default="velodyne" />
+  <arg name="z_offset" default="0.0" />
+  <arg name="pub_debug_image" default="true" />
+
+  <node pkg="lidar_instance_segmentation_tvm" type="lidar_instance_segmentation_tvm_node" name="lidar_instance_segmentation" output="screen" >
+    <!-- <remap from="~input/pointcloud" to="/sensing/lidar/top/rectified/pointcloud"/> -->
+    <!-- <remap from="~input/pointcloud" to="lidar_top" /> -->
+    <remap from="~input/pointcloud" to="points_raw" />
+    <remap from="~output/labeled_clusters" to="labeled_clusters" />
+    <rosparam subst_value="true">
+      model_file_path: $(arg model_file_path)
+      model_json_path: $(arg model_json_path)
+      model_params_path: $(arg model_params_path)
+      score_threshold: 0.1
+      range: 70
+      width: 672
+      height: 672
+      use_intensity_feature: true
+      use_constant_feature: false
+      z_offset: $(arg z_offset)
+      target_frame: $(arg target_frame)
+      pub_debug_image: $(arg pub_debug_image)
+    </rosparam>
+  </node>
+
+  <include file="$(find dynamic_object_visualization)/launch/dynamic_object_visualizer.launch">
+    <arg name="input" value="labeled_clusters" />
+    <arg name="with_feature" value="true" />
+    <arg name="only_known_objects" default="false" />
+  </include>
+</launch>
